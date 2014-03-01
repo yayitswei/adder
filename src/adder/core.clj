@@ -1,13 +1,15 @@
 (ns adder.core
   (:use compojure.core)
   (:use hiccup.core)
-  (:use hiccup.page-helpers)
+  (:use hiccup.page)
+  (:use hiccup.element)
   (:use adder.middleware)
   (:use ring.middleware.file)
   (:use ring.middleware.file-info)
   (:use ring.middleware.reload)
   (:use ring.middleware.stacktrace)
-  (:use ring.util.response))
+  (:use ring.util.response)
+  (:use ring.adapter.jetty))
 
 (def production?
   (= "production" (get (System/getenv) "APP_ENV")))
@@ -70,3 +72,7 @@
     (wrap-exception-logging)
     (wrap-if production?  wrap-failsafe)
     (wrap-if development? wrap-stacktrace)))
+
+(defn -main [& args]
+  (let [port (Integer/parseInt (get (System/getenv) "PORT" "8080"))]
+    (run-jetty #'adder.core/app {:port port})))
